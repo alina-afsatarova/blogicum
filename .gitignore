@@ -150,3 +150,12 @@ media/
 
 sent_emails/
 
+# базы данных
+.sqlite3
+.sqlite
+
+# flake8
+.flake8
+
+# json
+.json
