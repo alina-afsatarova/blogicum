@@ -12,7 +12,7 @@ urlpatterns = [
     ),
     path(
         'category/<slug:category_slug>/',
-        views.category_posts,
+        views.CategoryDetailView.as_view(),
         name='category_posts'
     ),
     path(
@@ -29,7 +29,6 @@ urlpatterns = [
         'posts/<int:post_id>/comment/',
         views.CommentCreateView.as_view(),
         name='add_comment'
-
     ),
     path(
         'posts/<int:post_id>/delete_comment/<int:comment_id>/',

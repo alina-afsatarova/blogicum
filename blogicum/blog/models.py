@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models import Count
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -37,7 +39,7 @@ class Category(BaseModel):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.title
+        return f'{self.title[:15]}/ {self.slug}'
 
 
 class Location(BaseModel):
@@ -49,6 +51,28 @@ class Location(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class PublishedManager(models.Manager):
+    """Опубликованные посты."""
+
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            'location', 'category', 'author'
+        ).filter(
+            is_published=True,
+            category__is_published=True,
+            pub_date__lte=timezone.now()
+        ).annotate(comment_count=Count('comments')).order_by('-pub_date')
+
+
+class AllPostsManager(models.Manager):
+    """Все посты."""
+
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            'location', 'category', 'author'
+        ).annotate(comment_count=Count('comments')).order_by('-pub_date')
 
 
 class Post(BaseModel):
@@ -82,12 +106,15 @@ class Post(BaseModel):
         verbose_name='Категория',
         null=True
     )
-
     image = models.ImageField(
         'Изображение',
-        upload_to='post_images',
+        upload_to='post_images/',
         blank=True
     )
+
+    objects = models.Manager()
+    published = PublishedManager()
+    all_posts = AllPostsManager()
 
     class Meta:
         verbose_name = 'публикация'
@@ -102,10 +129,19 @@ class Comment(BaseModel):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comments',
+        verbose_name='Публикация'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор комментария'
+    )
 
     class Meta:
         ordering = ('created_at',)
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text[:10]

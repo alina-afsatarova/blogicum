@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Location, Post
+from .models import Category, Comment, Location, Post
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -12,6 +12,14 @@ class CategoryAdmin(admin.ModelAdmin):
     list_editable = (
         'is_published',
     )
+
+
+class CommentAdmin(admin.ModelAdmin):
+    list_display = (
+        'post',
+        'author',
+        '__str__',
+        'created_at', )
 
 
 class LocationAdmin(admin.ModelAdmin):
@@ -33,6 +41,7 @@ class PostAdmin(admin.ModelAdmin):
         'category',
         'is_published',
         'created_at',
+        'image',
     )
     list_editable = (
         'pub_date',
@@ -41,5 +50,6 @@ class PostAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(Comment, CommentAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(Post, PostAdmin)
